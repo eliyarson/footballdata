@@ -1,0 +1,31 @@
+version: "3.1"
+
+services:
+  db:
+    image: postgres:15.3
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  metabase:
+    image: metabase/metabase
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    environment:
+      MB_DB_FILE: ${MB_DB_FILE}
+      MB_DB_TYPE: ${DB_TYPE}
+      MB_DB_DBNAME: ${DB_NAME}
+      MB_DB_PORT: ${DB_PORT}
+      MB_DB_USER: ${DB_USER}
+      MB_DB_HOST: db
+      MB_DB_PASS: ${DB_PASSWORD}
+    volumes:
+      - mb-data:/metabase-data
+
+volumes:
+  db-data:
+  mb-data:
