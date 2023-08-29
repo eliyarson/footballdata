@@ -9,14 +9,29 @@ data->>'match_round' as match_round,
 data->>'league_id' as league_id,
 upper(data->>'league_name') as league_name,
 data->>'league_year' as league_year,
-data->>'match_hometeam_score' as match_hometeam_score,
-upper(data->>'match_hometeam_name') as match_hometeam_name,
+cast(data->>'match_hometeam_score' as int) as match_hometeam_score,
+case
+when upper(data->>'match_hometeam_name') like '%TOTTENHAM%' then 'TOTTENHAM HOTSPUR'
+when upper(data->>'match_hometeam_name') like '%WEST HAM%' then 'WEST HAM UNITED'
+when upper(data->>'match_hometeam_name') like '%NEWCASTLE%' then 'NEWCASTLE UNITED'
+when upper(data->>'match_hometeam_name') like '%MANCHESTER U%' then 'MANCHESTER UNITED'
+else upper(data->>'match_hometeam_name')
+end as match_hometeam_name,
 data->>'match_hometeam_id' as match_hometeam_id,
-data->>'match_awayteam_score' as match_awayteam_score,
-upper(data->>'match_awayteam_name') as match_awayteam_name,
+cast(data->>'match_awayteam_score' as int) as match_awayteam_score,
+case
+when upper(data->>'match_awayteam_name') like '%TOTTENHAM%' then 'TOTTENHAM HOTSPUR'
+when upper(data->>'match_awayteam_name') like '%WEST HAM%' then 'WEST HAM UNITED'
+when upper(data->>'match_awayteam_name') like '%NEWCASTLE%' then 'NEWCASTLE UNITED'
+when upper(data->>'match_awayteam_name') like '%MANCHESTER U%' then 'MANCHESTER UNITED'
+else upper(data->>'match_awayteam_name')
+end as match_awayteam_name,
 data->>'match_awayteam_id' as match_awayteam_id,
 inserted_at
 from raw_football_data
+where data->>'league_year' = '2022/2023'
+and upper(data->>'league_name') = 'PREMIER LEAGUE'
+and upper(data->>'match_status') = 'FINISHED'
 ),
 results as (
 select
@@ -60,8 +75,5 @@ dedup as (
         ) AS row_version
   from points
 )
-select * from points
-where league_year = '2022/2023'
-and league_name = 'PREMIER LEAGUE'
-order by match_date
+select * from dedup where row_version = 1
 )
