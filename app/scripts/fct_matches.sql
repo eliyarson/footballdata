@@ -3,6 +3,7 @@ with src as (
 select
 data->>'match_id' as match_id,
 upper(data->>'match_referee') as match_referee,
+upper(data->>'match_status') as match_status,
 data->>'match_date' as match_date,
 data->>'match_round' as match_round,
 data->>'league_id' as league_id,
@@ -59,7 +60,7 @@ dedup as (
         ) AS row_version
   from points
 )
-select * from results 
+select * from points
 where league_year = '2022/2023'
 and league_name = 'PREMIER LEAGUE'
 order by match_date
