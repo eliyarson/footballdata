@@ -11,23 +11,30 @@ import glob
 import psycopg2
 from pprint import pp
 
+
 class FootballAPIConsumer:
     def __init__(
-        self, url: str = "https://apiv3.apifootball.com/", host: str = "", database: str = "", user: str = ""
+        self,
+        url: str = "https://apiv3.apifootball.com/",
+        host: str = "",
+        database: str = "",
+        user: str = "",
+        start_date: str = "2023-04-05",
+        finish_date: str = "2023-04-20",
+        league_id: str = "152",
+        raw_table_name="raw_football_data",
     ) -> None:
         self.url = url
-        self.path = ""
-        self.json_dir = "output/json_files"
         self.host = "localhost"
         self.database = "postgres"
         self.user = "postgres"
         self.password = os.getenv("POSTGRES_PASSWORD", "passwd")
         self.api_key = os.getenv("FOOTBALLAPI_KEY")
-        self.start_date ="2023-04-05"
-        self.finish_date = "2023-04-05"
-        self.league_id = "152"
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.league_id = league_id
         self.final_url = ""
-        
+        self.raw_table_name = raw_table_name
 
     def build_url(self):
         final_url = f"{self.url}?action=get_events&from={self.start_date}&to={self.finish_date}&league_id={self.league_id}&APIkey={self.api_key}"
@@ -39,8 +46,7 @@ class FootballAPIConsumer:
             try:
                 r = requests.get(self.final_url, stream=True, allow_redirects=True)
                 if r.ok:
-                    print(r.content)
-                    return self.path
+                    return r.json()
                 elif r.status_code == 404:
                     raise HTTPError("URL not found. Did you input the correct url?")
             except requests.exceptions.ReadTimeout:
@@ -50,17 +56,56 @@ class FootballAPIConsumer:
                 time.sleep(sleep)
                 continue
 
+    def create_conn(self):
+        return psycopg2.connect(
+            host=self.host,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+
+    def create_psql_table(self):
+        query = f"""
+        CREATE TABLE {self.raw_table_name} (
+	    id serial NOT NULL PRIMARY KEY,
+        data json NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        try:
+            with self.create_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(query)
+                conn.commit()
+        except psycopg2.DatabaseError:
+            raise
+
+    def insert_data(self, row):
+        clean = json.dumps(row).replace("'", "''")
+        query = f"""
+        INSERT INTO {self.raw_table_name}(
+            data
+        )
+        VALUES ('{clean}')
+        RETURNING id;
+        """
+        with self.create_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(query)
+            conn.commit()
+
+    def execute_sql_file(self, file, rows_to_fetch):
+        with self.create_conn() as conn:
+            with conn.cursor() as cur:
+                logging.info(f"Reading script: {file}")
+                cur.execute(open(f"{file}", "r").read())
+                columns = [column[0] for column in cur.description]
+                result = cur.fetchmany(rows_to_fetch)
+                for row in result:
+                    pp(dict(zip(columns, row)))
+
+
 def configure_logging(verbose: bool = False) -> None:
-    """
-    Configures the logging settings.
-
-    Args:
-        verbose (bool): If True, sets the logging level to DEBUG; otherwise, sets it to INFO. Defaults to False.
-
-    Returns:
-        None
-
-    """
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         format="%(asctime)s %(levelname)-8s %(message)s",
