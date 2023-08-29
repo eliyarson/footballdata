@@ -10,11 +10,11 @@ def cli(verbose):
 
 
 @click.command(name="get")
-@click.option("--start-date", required=False, help="Start date")
-@click.option("--finish-date", required=False, help="Finish date")
+@click.option("--start-date", required=True, help="Start date")
+@click.option("--finish-date", required=True, help="Finish date")
 @click.option("--bootstrap", required=False, default=False, help="Bootstrap the table")
 def get(start_date, finish_date, bootstrap):
-    fc = FootballAPIConsumer()
+    fc = FootballAPIConsumer(start_date=start_date, finish_date=finish_date)
     if bootstrap:
         logging.info("Boostrap enabled. Creating raw data table...")
         fc.create_psql_table()

@@ -69,7 +69,7 @@ class FootballAPIConsumer:
         CREATE TABLE {self.raw_table_name} (
 	    id serial NOT NULL PRIMARY KEY,
         data json NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        inserted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         """
         try:
