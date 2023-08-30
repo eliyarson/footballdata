@@ -1,9 +1,14 @@
 ## FootballAPI Data
 
-Simple Python App that reads the API from [apifootball](https://apifootball.com/) and insert its contents into a PostgreSQL database.
+Simple Python App that reads the API from [apifootball](https://apifootball.com/), extracts Premier League data and insert its contents into a PostgreSQL database.
 
-I have included scripts  to run against the data, just follow the instructions.
-Everything should work within docker.
+The app was developed as an CLI and containerized with Docker in order to make it easier to use with scheduling applications, such as Airflow.
+Some parameters such as `start-date` and `finish-date` can be used in conjunction with Airflow's timetable, making it easy to run a backfill on previous dates or re-run a failed execution.
+
+I have included scripts  to run against the data, including some models located within `scripts/models` folder.
+The premise of the modelling is that the application won't manipulate the data, inserting it as it is, so it's up to the model to create facts and dimensions.
+All models have a deduplication step because it can't guarantee that the raw data will be unique.
+For simplicity's sake, every model is only a SQL with multiple CTE's. In a real world use case, like in a dbt model, we would separate some of the CTE's into staging/intermediate models for better readability.
 
 CSVs are included in the folder `output`.
 
