@@ -8,6 +8,9 @@ json_array_elements(data->'cards') as cards,
 inserted_at
 from
 raw_football_data
+where data->>'league_year' = '2022/2023'
+and upper(data->>'league_name') = 'PREMIER LEAGUE'
+and upper(data->>'match_status') = 'FINISHED'
 ),
 treatment as (
 select
