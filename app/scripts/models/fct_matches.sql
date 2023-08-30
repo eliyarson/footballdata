@@ -1,3 +1,4 @@
+drop table fct_matches;
 create table fct_matches as (
 with src as (
 select
@@ -5,7 +6,7 @@ data->>'match_id' as match_id,
 upper(data->>'match_referee') as match_referee,
 upper(data->>'match_status') as match_status,
 data->>'match_date' as match_date,
-data->>'match_round' as match_round,
+cast(data->>'match_round' as int) as match_round,
 data->>'league_id' as league_id,
 upper(data->>'league_name') as league_name,
 data->>'league_year' as league_year,
@@ -76,4 +77,4 @@ dedup as (
   from points
 )
 select * from dedup where row_version = 1
-)
+);

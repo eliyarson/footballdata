@@ -49,7 +49,8 @@ class FootballAPIConsumer:
                     return r.json()
                 elif r.status_code == 404:
                     raise HTTPError("URL not found. Did you input the correct url?")
-            except requests.exceptions.ReadTimeout:
+            except Exception as e:
+                logging.debug(e)
                 logging.debug("Failure querying data")
                 logging.debug("Retrying")
                 sleep = backoff_in_seconds * 2**x + random.uniform(0, 1)
@@ -80,6 +81,18 @@ class FootballAPIConsumer:
         except psycopg2.DatabaseError:
             raise
 
+    def drop_psql_table(self):
+        query = f"""
+        DROP TABLE {self.raw_table_name};
+        """
+        try:
+            with self.create_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(query)
+                conn.commit()
+        except psycopg2.DatabaseError:
+            raise
+
     def insert_data(self, row):
         clean = json.dumps(row).replace("'", "''")
         query = f"""
@@ -95,14 +108,19 @@ class FootballAPIConsumer:
             conn.commit()
 
     def execute_sql_file(
-        self, path, print_result, output_csv, output_csv_path, rows_to_fetch
+        self,
+        path,
+        print_result=False,
+        output_csv=False,
+        output_csv_path="",
+        rows_to_fetch=100,
     ):
         with self.create_conn() as conn:
             with conn.cursor() as cur:
                 logging.info(f"Reading script: {path}")
                 cur.execute(open(f"{path}", "r").read())
-                columns = [column[0] for column in cur.description]
-                print(columns)
+                if cur.description:
+                    columns = [column[0] for column in cur.description]
                 if bool(output_csv):
                     dir_name = os.path.dirname(output_csv_path)
                     if dir_name:
@@ -110,14 +128,17 @@ class FootballAPIConsumer:
                     with open(output_csv_path, "w+") as f:
                         writer = csv.writer(f)
                         writer.writerow(columns)
-                result = cur.fetchmany(rows_to_fetch)
-                for row in result:
-                    if bool(print_result):
-                        pp(dict(zip(columns, row)))
-                    if bool(output_csv):
-                        with open(output_csv_path, "a") as f:
-                            writer = csv.writer(f)
-                            writer.writerow(row)
+                try:
+                    result = cur.fetchmany(rows_to_fetch)
+                    for row in result:
+                        if bool(print_result):
+                            pp(dict(zip(columns, row)))
+                        if bool(output_csv):
+                            with open(output_csv_path, "a") as f:
+                                writer = csv.writer(f)
+                                writer.writerow(row)
+                except:
+                    logging.info("No result to fetch.")
 
 
 def configure_logging(verbose: bool = False) -> None:

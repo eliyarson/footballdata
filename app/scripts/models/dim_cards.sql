@@ -1,3 +1,4 @@
+drop table dim_cards;
 create table dim_cards as (
 with src as (
 select
@@ -44,4 +45,4 @@ dedup as (
   from create_id
 )
 select * from dedup where row_version = 1
-)
+);

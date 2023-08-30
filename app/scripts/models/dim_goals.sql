@@ -1,3 +1,4 @@
+drop table dim_goals;
 create table dim_goals as (
 with src as (
 select
@@ -43,4 +44,4 @@ dedup as (
   from create_id
 )
 select * from dedup where row_version = 1
-)
+);
