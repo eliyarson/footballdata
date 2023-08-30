@@ -12,6 +12,8 @@ For simplicity's sake, every model is only a SQL with multiple CTE's. In a real 
 
 CSVs are included in the folder `output`.
 
+The API token is included in the repository also for making the setup process easier, since it was created with a temporary email. Again, in a real world scenario, it would be best if a Secret Store was used (GCP Secret Manager/AWS Parameter Store/ Hashicorp Vault), with the API key being injected into the container either during build time by the CI process or during execution by the Scheduler.
+
 A Metabase instance is bundled together if you want to do some exploratory data analysis, accessible from http://localhost:3000
 
 ### Prerequisites
