@@ -137,6 +137,8 @@ class FootballAPIConsumer:
                             with open(output_csv_path, "a") as f:
                                 writer = csv.writer(f)
                                 writer.writerow(row)
+                    if output_csv:
+                        logging.info(f"Output written to {output_csv_path}")
                 except:
                     logging.info("No result to fetch.")
 

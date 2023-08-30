@@ -3,7 +3,7 @@
 up-infra:
 	@docker compose up -d
 
-up: up-infra
+up: build up-infra bootstrap get-answers
 
 down:
 	@docker compose down --remove-orphans
@@ -19,4 +19,7 @@ bootstrap:
 	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/models/fct_matches.sql
 
 get-answers:
-	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/questions/away_goals_scored.sql --output-csv --output-csv-path output/test.csv
+	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/questions/final_league_table.sql --output-csv --output-csv-path output/query_a.csv
+	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/questions/away_goals_scored.sql --output-csv --output-csv-path output/query_b.csv
+	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/questions/top_5_referees_with_most_cards.sql --output-csv --output-csv-path output/query_c.csv
+	@docker run --rm --network host --volume $$(pwd)/output:/workspace/output app execute-sql --path scripts/questions/goalscore_by_round_14.sql --output-csv --output-csv-path output/query_d.csv
