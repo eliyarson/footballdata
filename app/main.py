@@ -29,14 +29,25 @@ def get(start_date, finish_date, bootstrap):
 @click.command(name="execute-sql")
 @click.option("--path", required=True, help="Path to sql file")
 @click.option(
+    "--print-result", required=False, default=False, help="Print result in console"
+)
+@click.option("--output-csv", required=False, default=False, help="Print output to csv")
+@click.option("--output-csv-path", required=False, help="Print output to csv")
+@click.option(
     "--rows_to_fetch",
     required=False,
-    default=10,
-    help="Number of rows to fetch. Defaults to 10",
+    default=100,
+    help="Number of rows to fetch. Defaults to 100",
 )
-def execute_sql_file(path, rows_to_fetch):
+def execute_sql_file(path, print_result, output_csv, output_csv_path, rows_to_fetch):
     fc = FootballAPIConsumer()
-    fc.execute_sql_file(path, rows_to_fetch)
+    fc.execute_sql_file(
+        path=path,
+        print_result=print_result,
+        output_csv=output_csv,
+        output_csv_path=output_csv_path,
+        rows_to_fetch=rows_to_fetch,
+    )
 
 
 cli.add_command(get)

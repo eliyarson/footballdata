@@ -10,6 +10,8 @@ import os
 import glob
 import psycopg2
 from pprint import pp
+import csv
+import os
 
 
 class FootballAPIConsumer:
@@ -19,7 +21,7 @@ class FootballAPIConsumer:
         host: str = "",
         database: str = "",
         user: str = "",
-        start_date: str = "2023-04-05",
+        start_date: str = "2022-01-01",
         finish_date: str = "2023-04-20",
         league_id: str = "152",
         raw_table_name="raw_football_data",
@@ -94,15 +96,30 @@ class FootballAPIConsumer:
             cur.execute(query)
             conn.commit()
 
-    def execute_sql_file(self, file, rows_to_fetch):
+    def execute_sql_file(
+        self, path, print_result, output_csv, output_csv_path, rows_to_fetch
+    ):
         with self.create_conn() as conn:
             with conn.cursor() as cur:
-                logging.info(f"Reading script: {file}")
-                cur.execute(open(f"{file}", "r").read())
+                logging.info(f"Reading script: {path}")
+                cur.execute(open(f"{path}", "r").read())
                 columns = [column[0] for column in cur.description]
+                print(columns)
+                if bool(output_csv):
+                    dir_name = os.path.dirname(output_csv_path)
+                    if dir_name:
+                        os.makedirs(dir_name, exist_ok=True)
+                    with open(output_csv_path, "w+") as f:
+                        writer = csv.writer(f)
+                        writer.writerow(columns)
                 result = cur.fetchmany(rows_to_fetch)
                 for row in result:
-                    pp(dict(zip(columns, row)))
+                    if bool(print_result):
+                        pp(dict(zip(columns, row)))
+                    if bool(output_csv):
+                        with open(output_csv_path, "a") as f:
+                            writer = csv.writer(f)
+                            writer.writerow(row)
 
 
 def configure_logging(verbose: bool = False) -> None:
