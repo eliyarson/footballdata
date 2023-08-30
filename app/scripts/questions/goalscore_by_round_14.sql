@@ -9,3 +9,4 @@ where
 match_round <=14
 group by 1,2
 order by goals desc, player_name asc
+limit 3
