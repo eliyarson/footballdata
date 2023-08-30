@@ -2,7 +2,6 @@
 
 up-infra:
 	@docker compose up -d
-	@mkdir output
 
 up: up-infra
 

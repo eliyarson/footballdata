@@ -1,4 +1,3 @@
-import zipfile
 import json
 import requests
 from requests import HTTPError
@@ -7,7 +6,6 @@ import time
 import random
 import warnings
 import os
-import glob
 import psycopg2
 from pprint import pp
 import csv
