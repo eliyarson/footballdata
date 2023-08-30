@@ -5,6 +5,8 @@ Simple Python App that reads the API from [apifootball](https://apifootball.com/
 I have included scripts  to run against the data, just follow the instructions.
 Everything should work within docker.
 
+CSVs are included in the folder `output`.
+
 A Metabase instance is bundled together if you want to do some exploratory data analysis, accessible from http://localhost:3000
 
 ### Prerequisites
